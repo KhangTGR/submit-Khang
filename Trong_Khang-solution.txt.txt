@@ -1,0 +1,307 @@
+
+# First we clone the project and get into it, then check the branches
+
+$ git clone git@github.com:renoleap/git-conflicts.git
+
++=================================================================+
+| Cloning into 'git-conflicts'...				  |
+| remote: Enumerating objects: 25, done.			  |
+| remote: Counting objects: 100% (11/11), done.			  |
+| remote: Compressing objects: 100% (6/6), done.		  |
+| remote: Total 25 (delta 5), reused 10 (delta 5), pack-reused 14 |
+| Receiving objects: 100% (25/25), done.			  |
+| Resolving deltas: 100% (12/12), done.				  |
++=================================================================+
+
+$ git cd git-conflicts
+
+$ git branch
+
++========+
+| * main |
++========+
+
+# In my case, I can not checkout all the remote branches within the project
+# Therefore, I have to make some commands to resolve this problem
+# The one I use here is the "fetch" command
+
+# git fetch origin 'remote_branch':'local_branch_name'
+# This will fetch the remote branch and create a new local branch (if not exists already)
+# with name local_branch_name and track the remote one in it
+# Let's see all the branches including the remote ones
+
+$ git branch -a -v
+
++===============================================================+
+| * main                          f08c251 update README cleanup	|
+|   remotes/origin/HEAD           -> origin/main		|
+|   remotes/origin/addition       d524d3c addition code		|
+|   remotes/origin/division       bcd5bb1 division code		|
+|   remotes/origin/main           f08c251 update README cleanup	|
+|   remotes/origin/multiplication 6c2f322 multiplication code	|
+|   remotes/origin/subtraction    363dd5b subtraction code	|
++===============================================================+
+
+# Now, create all the important branches from remote ones for the exercise
+# Start up with the 'addition' one
+
+$ git fetch origin 'addition':'addition'
+
++===============================================+
+| Enter passphrase for key '/root/.ssh/id_rsa': |
++===============================================+
+
+# Here just simply enter the key and check again with 'branch' command
+
++=============================================+
+| From github.com:renoleap/git-conflicts      |
+|  * [new branch]      addition   -> addition |
++=============================================+
+
+$ git branch
+
++============+
+|   addition |
+| * main     |
++============+
+
+# Finally, we have the 'addition' branch we need
+# Do the same thing with other remote branches too
+
+..........
+
+# Here's the result
+
+$ git branch
+
++==================+
+|   addition	   |
+|   division	   |
+| * main	   |
+|   multiplication |
+|   subtraction	   |
++==================+
+
+# Notice that the merge' command only works with the already committed branches before
+# With all being said, we need to check all these branches just to make sure
+# all of them are being committed
+
+$ git checkout division
+
+$ git log --oneline
+
++===========================================================+
+| bcd5bb1 (HEAD -> division, origin/division) division code |
+| e2fa36b init code					    |
+| 26a8241 Initial commit				    |
++===========================================================+
+
+# Seem good that this branch has been committed
+# But let's change the committing message a little bit for better noticing
+# by using 'commit --amend' command
+
+$ git commit --amend
+
+# Here I change the message to whatever I want and the result is in the below
+# Remember to save and exit, use combo Crtl+S then Ctrl+x
+
++==========================================================================+
+| [division 9386bee] +===============+ | Division Code | +===============+ |
+|  Author: Long Vu <long.vu@sunbytes.vn>				   |
+|  Date: Mon May 9 12:23:49 2022 +0700					   |
+|  1 file changed, 7 insertions(+)					   |
++==========================================================================+
+
+$ git log
+
++====================================================================+
+| commit 9386beeedb3cf3593f22cba9ed7ee2e1da607b34 (HEAD -> division) |
+| Author: Long Vu <long.vu@sunbytes.vn>				     |
+| Date:   Mon May 9 12:23:49 2022 +0700				     |
+|								     |
+|    +===============+						     |
+|    | Division Code |						     |
+|    +===============+						     |
++====================================================================+
+
+# Looking good! Let's do the same with others as well
+
+...............
+
+
+# Let's begin doing the exercise!
+# Head back to the 'main' branch and merge with the 'addition' branch
+
+$ git checkout main
+
+$ git merge addition
+
+# The message screen will pop up then just type whatever you want
+# After merging successfully, use 'log --graph' to check the process
+# and you would see something like this
+
++===============================================================================+
+
+	*   commit 0d0362522a0d1f8bc71373a72a4389e2b2d1391e (HEAD -> main)
+	|\  Merge: f08c251 7720da1
+	| | Author: Khangdepzai <khangtgr@gmail.com>
+	| | Date:   Fri Oct 21 10:29:37 2022 +0700
+	| |
+	| |     +=========================+
+	| |     | Merge branch 'addition' |
+	| |     +=========================+
+	| |
+	| * commit 7720da1406ba31be31c71e9259975a43fde377ec (addition)
+	| | Author: Long Vu <long.vu@sunbytes.vn>
+	| | Date:   Mon May 9 12:21:15 2022 +0700
+	| |
+	| |     +===============+
+	| |     | Addition Code |
+	| |     +===============+
+	| |
+
++===============================================================================+
+
+# It seems like nothing wrong happened
+# continue
+
+$ git merge subtraction
+
++===================================================================+
+| Auto-merging calculator.py					    |
+| CONFLICT (content): Merge conflict in calculator.py		    |
+| Automatic merge failed; fix conflicts and then commit the result. |
++===================================================================+
+
+# The error called "merge conflict" has come and this is the main subject of the exercise
+# To resolve this issue, we need to read the file to see what was going wrong
+
+$ cat calculator.py
+
++=================================================================================+
+| def calculate():								  |
+|   operation = input('''							  |
+| Please type in the math operation you would like to complete:			  |
+| + for addition								  |
+| - for subtraction								  |
+| * for multiplication								  |
+| / for division								  |
+| ''')										  |
+| 										  |
+|   number_1 = int(input('Please enter the first number: '))			  |
+|   number_2 = int(input('Please enter the second number: '))			  |
+| 										  |
+| <<<<<<< HEAD									  |
+|   if operation == '+':							  |
+|     print('{} + {} = '.format(number_1, number_2))				  |
+|     print(number_1 + number_2)						  |
+| =======									  |
+|   if operation == '-':							  |
+|     print('{} - {} = '.format(number_1, number_2))				  |
+|     print(number_1 - number_2)						  |
+| >>>>>>> subtraction								  |
+| 										  |
+|   else:									  |
+|     print('You have not typed a valid operator, please run the program again.') |
+|										  |
+| calculate()									  |
++=================================================================================+
+
+# You can see those lines that have '<<<<<<< HEAD', '>>>>>>> subtraction'
+# and the '=======' line to divide between the difference as the core of the conflict
+
+# One way to solve this to just simply delete those lines
+# You can use either 'vim' or 'sed'
+# Here I choose 'vim' for fixing the issue then commit it and finally see the result
+
+$ vim calculator.py
+
+$ git add calculator.py
+
+$ git commit
+(Type whatever you want)
+
+$ git log --graph
+
++=======================================================================================+
+
+	*   commit b06b573a9ffe6ecac59e9405fb2ebd52a28e4850 (HEAD -> main)
+	|\  Merge: 0d03625 fb19191
+	| | Author: Khangdepzai <khangtgr@gmail.com>
+	| | Date:   Fri Oct 21 11:11:19 2022 +0700
+	| |
+	| |     +============================+
+	| |     | Merge branch 'subtraction' |
+	| |     +============================+
+	| |
+	| * commit fb19191ef5a9dc35ff60b256e46e2b19e7c12afc (subtraction)
+	| | Author: Long Vu <long.vu@sunbytes.vn>
+	| | Date:   Mon May 9 12:22:06 2022 +0700
+	| |
+	| |     +==================+
+	| |     | Subtraction Code |
+	| |     +==================+
+	| |
+	* |   commit 0d0362522a0d1f8bc71373a72a4389e2b2d1391e
+	|\ \  Merge: f08c251 7720da1
+	| | | Author: Khangdepzai <khangtgr@gmail.com>
+	| | | Date:   Fri Oct 21 10:29:37 2022 +0700
+	| | |
+	| | |     +=========================+
+	| | |     | Merge branch 'addition' |
+	| | |     +=========================+
+	| | |
+	| * | commit 7720da1406ba31be31c71e9259975a43fde377ec (addition)
+	| |/  Author: Long Vu <long.vu@sunbytes.vn>
+	| |   Date:   Mon May 9 12:21:15 2022 +0700
+	| |
+	| |       +===============+
+	| |       | Addition Code |
+	| |       +===============+
+	| |
+	* | commit f08c251ccca2b17836a7d7e28e0b8480a013e7ec (origin/main, origin/HEAD)
+	| | Author: Long Vu <longersoft@gmail.com>
+	| | Date:   Fri Jun 24 15:43:45 2022 +0700
+	| |
+	| |     update README cleanup
+
++=======================================================================================+
+
+  =====| Note |=====
+# And in case you want to see a better difference between the two that creates conflit
+# then use ReReRe to check it
+
+
+# Keeps on doing the same with other branches and ultimately, we have the result
+
+$ cat calculator.py
+
++===============================================================+
+| def calculate():
+|   operation = input('''
+| Please type in the math operation you would like to complete:
+| + for addition
+| - for subtraction
+  ...
+|   if operation == '+':
+|     print('{} + {} = '.format(number_1, number_2))
+|     print(number_1 + number_2)
+|
+|   if operation == '-':
+|     print('{} - {} = '.format(number_1, number_2))
+|     print(number_1 - number_2)
+|
+|   if operation == '/':
+|     print('{} / {} = '.format(number_1, number_2))
+|     print(number_1 / number_2)
+|
+|   if operation == '*':
+|     print('{} * {} = '.format(number_1, number_2))
+|     print(number_1 * number_2)
+|
+  ...
++===============================================================+
+
+# Now simply create a repo on GitHub
+# then create a new branch from it named 'submit/<your-name>'
+# With all the materials, it's time to push the result from here to the repo on GitHub
